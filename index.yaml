@@ -3,6 +3,15 @@ entries:
   ngrok:
   - apiVersion: v1
     appVersion: "1.0"
+    created: "2019-09-06T13:22:00.025383854+02:00"
+    description: A Ngrok Helm chart for Kubernetes
+    digest: cac13075eb8db1f99bfed8f9cbc3bba15069b5b473f8e30751adb4d34acc8e95
+    name: ngrok
+    urls:
+    - https://github.com/netmanito/my-helm-charts/releases/download/ngrok-0.2.1/ngrok-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v1
+    appVersion: "1.0"
     created: "2019-09-06T12:50:06.846297807+02:00"
     description: A Helm chart for Kubernetes
     digest: c59694104ddb3b8bb36161fd09ad82a88f6079eb164f9f823d1596d25976d27a
