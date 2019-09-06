@@ -1,9 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "ngrok.fullname" . }}
+  name: {{ template "ngrok.fullname" . }}
   labels:
-{{ include "ngrok.labels" . | indent 4 }}
+    app: {{ template "ngrok.name" . }}
+    chart: {{ template "ngrok.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,5 +15,5 @@ spec:
       protocol: TCP
       name: http
   selector:
-    app.kubernetes.io/name: {{ include "ngrok.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app: {{ template "ngrok.name" . }}
+    release: {{ .Release.Name }}

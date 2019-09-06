@@ -1,52 +1,65 @@
-apiVersion: apps/v1
+apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  name: {{ include "ngrok.fullname" . }}
+  name: {{ template "ngrok.fullname" . }}
   labels:
-{{ include "ngrok.labels" . | indent 4 }}
+    app: {{ template "ngrok.name" . }}
+    chart: {{ template "ngrok.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "ngrok.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+      app: {{ template "ngrok.name" . }}
+      release: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "ngrok.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+        app: {{ template "ngrok.name" . }}
+        release: {{ .Release.Name }}
+      annotations:
+        prometheus.io/scrape: 'false'
     spec:
-    {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - ./ngrok
+            - http
+            {{- if .Values.subdomain }}
+            - --subdomain={{ .Values.subdomain }}
+            {{- end }}
+            - {{ .Values.expose.service }}
+          volumeMounts:
+          - name: config
+            mountPath: /home/ngrok/.ngrok2
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 4040
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
+              path: /api/tunnels
               port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
       nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+{{ toYaml . | indent 8 }}
+    {{- end }}
     {{- with .Values.affinity }}
       affinity:
-        {{- toYaml . | nindent 8 }}
+{{ toYaml . | indent 8 }}
     {{- end }}
     {{- with .Values.tolerations }}
       tolerations:
-        {{- toYaml . | nindent 8 }}
+{{ toYaml . | indent 8 }}
     {{- end }}
+      volumes:
+      - name: config
+        configMap:
+          name: {{ template "ngrok.fullname" . }}
